@@ -191,15 +191,36 @@ const Header: React.FC<{
 
 const SettingsPage: React.FC<{apiKey: string | null, onSave: (key: string) => void}> = ({ apiKey, onSave }) => {
     const [keyInput, setKeyInput] = useState(apiKey || '');
+    const isEnvKeySet = !!process.env.NEXT_PUBLIC_API_KEY;
     
     const handleSave = () => {
         onSave(keyInput);
         alert('API 키가 저장되었습니다.');
     }
 
+    if (isEnvKeySet) {
+        return (
+            <div className="bg-primary p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10 border border-border">
+                <h2 className="text-2xl font-bold mb-4 text-highlight">인증키 설정</h2>
+                <div className="bg-secondary p-4 rounded-md border border-border">
+                    <p className="text-green-500 font-semibold">✓ 환경변수로 API 키가 설정되어 있습니다.</p>
+                    <p className="text-text-secondary text-sm mt-2">
+                        보안을 위해 환경변수에서 API 키를 관리하고 있습니다.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-primary p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10 border border-border">
             <h2 className="text-2xl font-bold mb-4 text-highlight">인증키 설정</h2>
+            <div className="bg-danger-bg p-3 rounded-md border border-danger-text/30 mb-4">
+                <p className="text-danger-text text-sm font-semibold">⚠️ 보안 권장사항</p>
+                <p className="text-text-primary text-xs mt-1">
+                    프로덕션 환경에서는 환경변수(NEXT_PUBLIC_API_KEY)로 API 키를 설정하는 것을 권장합니다.
+                </p>
+            </div>
             <p className="text-text-secondary mb-6">
                 공공데이터포털(data.go.kr)에서 발급받은 '환경부 전기자동차 충전소 정보' OpenAPI의 일반 인증키를 입력해주세요.
             </p>
@@ -801,7 +822,9 @@ const CompetitiveAnalysisPage: React.FC<{ data: ChargingSession[]; updatedAt: Da
 
 export default function App() {
     const [activePage, setActivePage] = useState<Page>('overview');
-    const [apiKey, setApiKey] = useState<string | null>(() => localStorage.getItem('ev_dashboard_api_key'));
+    const [apiKey, setApiKey] = useState<string | null>(() => 
+        process.env.NEXT_PUBLIC_API_KEY || localStorage.getItem('ev_dashboard_api_key')
+    );
     const [theme, setTheme] = useState<'light' | 'dark'>(() => (localStorage.getItem('ev_dashboard_theme') as 'light' | 'dark') || 'dark');
     
     useEffect(() => {
@@ -813,7 +836,9 @@ export default function App() {
     }, [theme]);
 
     const handleSaveApiKey = (key: string) => {
-        localStorage.setItem('ev_dashboard_api_key', key);
+        if (!process.env.NEXT_PUBLIC_API_KEY) {
+            localStorage.setItem('ev_dashboard_api_key', key);
+        }
         setApiKey(key);
     };
     
