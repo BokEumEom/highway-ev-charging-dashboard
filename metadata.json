@@ -1,0 +1,5 @@
+{
+  "name": "Highway EV Charging Dashboard",
+  "description": "A comprehensive dashboard for monitoring and analyzing the utilization of electric vehicle charging stations on highways across the nation, including competitor analysis.",
+  "requestFramePermissions": []
+}
