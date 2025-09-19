@@ -190,63 +190,35 @@ const Header: React.FC<{
 }
 
 const SettingsPage: React.FC<{apiKey: string | null, onSave: (key: string) => void}> = ({ apiKey, onSave }) => {
-    const [keyInput, setKeyInput] = useState(apiKey || '');
-    const isEnvKeySet = !!process.env.NEXT_PUBLIC_API_KEY;
-    
-    const handleSave = () => {
-        onSave(keyInput);
-        alert('API 키가 저장되었습니다.');
-    }
-
-    if (isEnvKeySet) {
-        return (
-            <div className="bg-primary p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10 border border-border">
-                <h2 className="text-2xl font-bold mb-4 text-highlight">인증키 설정</h2>
+    return (
+        <div className="bg-primary p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10 border border-border">
+            <h2 className="text-2xl font-bold mb-4 text-highlight">설정</h2>
+            <div className="space-y-4">
                 <div className="bg-secondary p-4 rounded-md border border-border">
+                    <h3 className="text-text-primary font-semibold mb-2">API 인증</h3>
                     <p className="text-green-500 font-semibold">✓ 환경변수로 API 키가 설정되어 있습니다.</p>
                     <p className="text-text-secondary text-sm mt-2">
-                        보안을 위해 환경변수에서 API 키를 관리하고 있습니다.
+                        공공데이터포털 전기차 충전소 정보 API를 사용하여 실시간 데이터를 제공합니다.
+                    </p>
+                </div>
+                
+                <div className="bg-secondary p-4 rounded-md border border-border">
+                    <h3 className="text-text-primary font-semibold mb-2">데이터 업데이트</h3>
+                    <p className="text-text-secondary text-sm">
+                        • 5분마다 자동 업데이트<br/>
+                        • 고속도로 휴게소 급속충전기 정보<br/>
+                        • 실시간 충전기 상태 반영
+                    </p>
+                </div>
+
+                <div className="bg-secondary p-4 rounded-md border border-border">
+                    <h3 className="text-text-primary font-semibold mb-2">매출 추정</h3>
+                    <p className="text-text-secondary text-sm">
+                        충전량 기준 300원/kWh로 계산된 추정치입니다.<br/>
+                        실제 운영사별 요금과 차이가 있을 수 있습니다.
                     </p>
                 </div>
             </div>
-        );
-    }
-
-    return (
-        <div className="bg-primary p-6 rounded-lg shadow-md max-w-lg mx-auto mt-10 border border-border">
-            <h2 className="text-2xl font-bold mb-4 text-highlight">인증키 설정</h2>
-            <div className="bg-danger-bg p-3 rounded-md border border-danger-text/30 mb-4">
-                <p className="text-danger-text text-sm font-semibold">⚠️ 보안 권장사항</p>
-                <p className="text-text-primary text-xs mt-1">
-                    프로덕션 환경에서는 환경변수(NEXT_PUBLIC_API_KEY)로 API 키를 설정하는 것을 권장합니다.
-                </p>
-            </div>
-            <p className="text-text-secondary mb-6">
-                공공데이터포털(data.go.kr)에서 발급받은 '환경부 전기자동차 충전소 정보' OpenAPI의 일반 인증키를 입력해주세요.
-            </p>
-            <div className="space-y-4">
-                <div>
-                    <label htmlFor="apiKey" className="block text-sm font-medium text-text-primary mb-1">
-                        서비스 키
-                    </label>
-                    <input
-                        id="apiKey"
-                        type="text"
-                        value={keyInput}
-                        onChange={(e) => setKeyInput(e.target.value)}
-                        placeholder="인증키(URL 인코딩된 값)를 입력하세요"
-                        className="w-full p-2 bg-secondary border border-border rounded-md focus:ring-accent focus:border-accent"
-                    />
-                </div>
-                <button onClick={handleSave} className="w-full bg-accent hover:bg-highlight text-white font-bold py-2 px-4 rounded-md transition-colors">
-                    저장
-                </button>
-            </div>
-             {apiKey && (
-                <p className="mt-4 text-sm text-green-500">
-                    인증키가 저장되어 있습니다.
-                </p>
-            )}
         </div>
     );
 }
@@ -591,6 +563,12 @@ const RegionalAnalysisPage: React.FC<{ data: ChargingSession[] }> = ({ data }) =
 
 const TimePatternAnalysisPage: React.FC<{ data: ChargingSession[]; updatedAt: Date | null; chartColors: ChartColors }> = ({ data, updatedAt, chartColors }) => {
      const memoizedData = useMemo(() => {
+        console.log('TimePatternAnalysisPage data length:', data.length);
+        
+        if (!data || data.length === 0) {
+            return { heatmap: [], peakTimeData: [], dayTypeData: [] };
+        }
+
         const timeData = Array(7).fill(0).map(() => Array(24).fill(0));
         const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -618,6 +596,9 @@ const TimePatternAnalysisPage: React.FC<{ data: ChargingSession[]; updatedAt: Da
                 value
             }))
         );
+
+        console.log('Generated heatmap length:', heatmap.length);
+        console.log('Heatmap sample:', heatmap.slice(0, 5));
 
         const peakTimeData = Object.entries(peakTime).map(([name, value]) => ({ name, value }));
         const dayTypeData = Object.entries(dayType).map(([name, value]) => ({ name, value }));
